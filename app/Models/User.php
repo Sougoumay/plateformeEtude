@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
@@ -33,15 +34,19 @@ class User extends Authenticatable
         'password',
     ];
 
-    function subjects()
+    public function subjectTeachers()
     {
-        $relation = '';
-        if(User::Auth()->status==="teacher"){
-            $relation = $this->hasMany(Subject::class);
-        }elseif (User::Auth()->status==="student"){
-            $relation = $this->belongsToMany(Subject::class);
-        }
-        return $relation;
+        return $this->hasMany(Subject::class,'teacher_id','id');
+    }
+
+    public function subjectStudents()
+    {
+        return $this->belongsToMany(Subject::class, 'user_subjects', 'student_id', 'subject_id');
+    }
+
+    public function solutions()
+    {
+        return $this->hasMany(Solution::class,'student_id','id');
     }
 
     /**
@@ -73,4 +78,9 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
+
+    public function setPasswordAttribute($value)
+    {
+        $this->attributes['password']=Hash::make($value);
+    }
 }

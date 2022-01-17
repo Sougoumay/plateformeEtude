@@ -13,7 +13,7 @@ class SubjectRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -25,9 +25,24 @@ class SubjectRequest extends FormRequest
     {
         return [
             'nom'=>'string|required|min:3',
-            'description'=>'text|required',
-            'code'=>'string|required',
-            'credit'=>'number|required'
+            'description'=>'string|required|min:25',
+            'code'=>['string','required','regex:/^I{1}K{1}-[A-Z]{3}[0-9]{3}$/i'],
+            'credit'=>'numeric|required'
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'nom'=>'name'
+        ];
+    }
+
+    public function message()
+    {
+        return [
+          'name.string'=>'Obligatoirement une chaine de caractère',
+            'nom.required'=>' champ obligatoire'
         ];
     }
 }

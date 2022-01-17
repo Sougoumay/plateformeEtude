@@ -13,7 +13,7 @@ class SolutionRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,9 @@ class SolutionRequest extends FormRequest
     public function rules()
     {
         return [
-            'solution'=>'text|required'
+            'solution'=>'string|required',
+            'evaluation'=>'numeric|regex:/^[0-10]$/i',
+            'task_id'=>'numeric'
         ];
     }
 }

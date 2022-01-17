@@ -13,37 +13,33 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Testing\Assert;
 
 class Matiere extends Controller
 {
+    function teacherAccueil()
+    {
+        $sujets = Subject::where('teacher_id',\auth()->id())->get();
+        return view('teacher.allSubject',compact('sujets'));
+    }
+
     function createSubject(SubjectRequest $subjectRequest)
     {
-        $data = $subjectRequest->validate([
-            'nom'=>'string|required|min:3',
-            'description'=>'text|required',
-            'code'=>'string|required',
-            'credit'=>'number|required'
-        ]);
-        Subject::create($data);
-        return view('teacher/Accueil');
+        // TODO que fait la fonction user()
+        $subjectRequest->user()->subjectTeachers()->create($subjectRequest->all());
+        /*Subject::create($subjectRequest->all()); Cette ligne de code ne permet de créer un sujet
+        parcequ'on id du teacher qui la crée */
+        return  redirect()->route('allSubject');
     }
 
     public function createSubjectGet()
     {
-        return view('teacher/createSubject');
+        return view('teacher.createSubject');
     }
 
     public function createUser(UserRequest $userRequest)
     {
-        $data = $userRequest->validate([
-            'nom'=>'string|required|min:3',
-            'prenom'=>'string|required|min:3',
-            'status'=>'string|required|min:7|max:7',
-            'identifiant'=>'string|required|min:8|max:12',
-            'email'=>'string|required',
-            'password'=>Hash::make('password')
-        ]);
-        User::create($data);
+        User::create($userRequest->all());
 
         return back();
     }
@@ -55,43 +51,37 @@ class Matiere extends Controller
 
     public  function allSubject()
     {
-        $sujets = Subject::all();
-
-        return view('teacher/allSubject',compact('sujets'));
+        return redirect()->route('teacher.accueil');
     }
 
     public function detailsSubject($id)
     {
-        $subjects = Subject::find($id);
-        $students = $subjects->users->whereStatus('teacher')->nom;
-        $questions = Task::where('subject_id',$id)->get();
-        return view('detailsSubject',compact('subjects', 'students','questions'));
+        //$subjects = Subject::find($id);
+        $subjects = Subject::with('userStudents','tasks')->find($id);
+        //dd($subjects);
+        /*$students = $subjects->userStudents()->whereStatus('student')->get(); Avec cette ligne de code on peut tirer les etudiants
+        liées au sujet mais ca rend le code moins performant en ayant recours à plus de query*/
+        //dd($students);
+        return view('teacher.detailsSubject',compact('subjects'));
     }
 
     public function updateSubjectGet($id)
     {
         $sujet = Subject::find($id);
-        return view('teacher/updateSubject',compact('sujet'));
+        return view('teacher.updateSubject',compact('sujet'));
     }
 
     public function updateSubject(SubjectRequest $subjectRequest, $id)
     {
-        $data = $subjectRequest->validate([
-            'nom'=>'string|required|min:3',
-            'description'=>'text|required',
-            'code'=>'string|required',
-            'credit'=>'number|required'
-        ]);
-
-        Subject::find($id)->update($data);
-        return view('teacher/allSubject');
+        Subject::find($id)->update($subjectRequest->all());
+        return redirect()->route('allSubject');
     }
 
     public function deleteSubject($id)
     {
         $sujet = Subject::find($id);
-        $sujet->softDeletes();
-        return view('teacher/allSubject');
+        $sujet->delete();
+        return redirect()->route('allSubject');
     }
 
     public function createTaskGet($id)
@@ -100,70 +90,56 @@ class Matiere extends Controller
         return view('teacher/createTask',compact('sujet'));
     }
 
-    public function createTask(TaskRequest $taskRequest, Request $request, $id)
+    public function createTask(TaskRequest $taskRequest, $id)
     {
-        $tasks = $taskRequest->validate([
-            'nom'=>'string|required|min:5',
-            'description'=>'text|required',
-            'points'=>'float'
-            ]);
-
-        Task::create([
-            'nom'=>$taskRequest->get('nom'),
-            'description'=>$taskRequest->get('description'),
-            'points'=>$taskRequest->get('points'),
-            'subject_id'=>$request->get($id)
-        ]);
+        $sujet = Subject::find($id);
+        $sujet->tasks()->create($taskRequest->all());
+        //Task::create($taskRequest->all());
         // TODO la redirection est à revoir
-        return view('teacher/Accueil');
+        return redirect()->route('detailsSubject', $id);
     }
 
     public function viewTask($id)
     {
-        $task = Task::find($id);
-        //$solutionSoumise = $task->solutions->whereEvaluation('null');
+        $task = Task::with('solutions')->find($id);
         //$solutionEvalue = $task->solutions->where('Evaluation','!=','null');
-        $solutionSoumise = $task->solutions->whereEvaluation('null');
-        $solutionEvalue = $task->solutions->where('Evaluation','!=','null');
-        $students = $solutionEvalue->with(['tasks'=>function($tache){
-            $tache->with(['subject'=>function($sujets){
-                $sujets->with(['users'=>function($etudiants){
-                    $etudiants->whereStatus('Student')->get();
-                }]);
-            }]);
-        }]);
-        $etudiants = User::with(['subjects'=>function($sujets){
-            $sujets->with(['tasks'=>function($tache){
-                $tache->with(['$solutions'=>function($solutionSoumise){
-                    $solutionSoumise;
-                }]);
-            }]);
-        }]);
-        // TODO comment faire pour retrouver les etudiants ayant soumis les olutions liées à une tache donnée
-        // TODO c'est la réponse à la question 16
-        // TODO la vue viewTask n'est pas encore terminé
-        return view('teacher/viewTask',compact('task','solutionSoumise','solutionEvalue'));
+        return view('teacher.viewTask',compact('task'));
     }
 
-    public function updateTaskGet(TaskRequest $taskRequest, $id)
+    public function updateTaskGet($id)
     {
         $tache = Task::find($id);
-        return view('updateTask',compact('tache'));
+        return view('teacher.updateTask',compact('tache'));
     }
 
     public function updateTask(TaskRequest $taskRequest, $id)
     {
-        Task::find($id)->update([
-            'nom'=>$taskRequest->get('nom'),
-            'description'=>$taskRequest->get('description'),
-            'points'=>$taskRequest->get('points'),
-        ]);
+        Task::find($id)->update($taskRequest->all());
+        return redirect()->route('viewTask',$id);
     }
 
     public function createSolutionGet($id)
     {
         $task = Task::find($id);
-        return view('teacher/createSolution',compact('task'));
+        return view('teacher.createSolution',compact('task'));
+    }
+
+    public function evaluateSolutionGet($id)
+    {
+        $sol = Solution::with('tasks','students')->find($id);
+        $task = Task::with('subjects','solutions')->find($sol->task_id);
+        return view('teacher.evaluateSolution',compact('sol','task'));
+    }
+
+    public function evaluateSolution(SolutionRequest $solutionRequest, $id)
+    {
+        $solutions = Solution::find($id);
+        $solutions->update([
+            'evaluation'=>$solutionRequest->get('evaluation'),
+            'evaluated_at'=>now()
+        ]);
+
+        return redirect()->route('viewTask',$solutions->task_id);
     }
 
    // ----------------------------------------------------------------------------------------------
@@ -172,43 +148,71 @@ class Matiere extends Controller
 
     public function studentAccueil()
     {
-        $sujets =Auth::user()->subjects->get();
-        $teachers = $sujets->with('users')->whereStatus('teacher')->first();
-        return view('student/accueil',compact('sujets','teachers'));
+        $sujets =Auth::user()->subjectStudents()->get();
+        $teachers = 'Adoum';
+        return view('student.accueil',compact('sujets','teachers'));
     }
 
     public function studentPrendreSujetGet()
     {
-        // TODO la fonction n'est pas finalisé
-        $oldSubject =Auth::user()->subjects->get();
-        $oldSubjectId = [];
-        $newSubject = Subject::all();
-        $newSubjectNameId = [];
-        foreach ($oldSubject->id as $id){
-            $oldSubjectId[]=[$id];
-        }
-        foreach ($newSubject as $subject){
-            $newSubjectNameId[] = ['id'=>$subject->id,
-                'name'=>$subject->nom,
-                'description'=>$subject->description,
-                'code'=>$subject->code,
-                'credit'=>$subject->credit
-                ];
-        }
-        $newSubjectNameIdCollection = collect($newSubjectNameId);
-        $nameIdSubjectToAdd = $newSubjectNameIdCollection->whereNotIn('id',$oldSubjectId);
+        $sujets = Subject::with('userTeachers')
+            ->whereDoesntHave('userStudents',function($key){
+            $key->where('student_id',auth()->id());
+        })->get();
+        return view('student.addSubject',compact('sujets'));
+    }
 
-        return view('student/addSubject',compact('id'));
+    public function addSubject($id)
+    {
+        Subject::find($id)->userStudents()->attach(auth()->id());
+        return redirect()->route('student.accueil');
     }
 
     public function studentDeleteSubject($id)
     {
-        $sujet = Subject::find($id);
-        $sujet->users->detach(Auth::id());
-        $sujet->softDeletes();
-        $sujets =Auth::user()->subjects->get();
-        $teachers = $sujets->with('users')->whereStatus('teacher')->first();
-        return view('student/accueil',compact('sujets','teachers'));
+        Auth::user()->subjectStudents()->detach($id);
+        return redirect()->route('student.accueil');
+    }
+
+    public function studentSubjectDetailsGet($id)
+    {
+        $questions = Task::with('subjects','solutions')->where('subject_id',$id)->get();
+
+        //dd($questions);
+        //$solutionSoumise = $questions->solutions;
+        //dd($solutionSoumise);
+        $subjects = Subject::with('userTeachers', 'userStudents', 'tasks')->find($id);
+        //foreach ($subjects->tasks as $task){
+            //dd($task->solutions->where('student_id',\auth()->id())->first()->exists());
+            //dd($task->solutions->count());
+       //}
+        $questions = Task::with('subjects','solutions')->find($id);
+        //dd($questions->solutions->count());
+        //$solutionSoumise = $questions->solutions->where('task_id',$id)->count();
+        //dd($questions);
+        return view('student.detailsSubject',compact('subjects'));
+    }
+
+    public function studentAnswerOnTaskGet($id)
+    {
+        $questions = Task::with('subjects','solutions')->find($id);
+        //dd($solutionSoumise = $questions->solutions->where('task_id',$id)->count());
+        $subject = Subject::with('userTeachers')->find($questions->subject_id);
+        $teacher = $subject->userTeachers->nom;
+        //dd($teacher);
+        //dd($subject);
+        return view('student.toAnswerOnTask',compact('questions','subject', 'teacher'));
+    }
+
+    public function studentAnswerOnTask(SolutionRequest $solutionRequest, $id)
+    {
+        Solution::create([
+            'solution'=>$solutionRequest->get('solution'),
+            'student_id'=>auth()->id(),
+            'task_id' => $id
+        ]);
+
+        return redirect()->route('student.AnswerOnTaskGet',$id);
     }
 
 

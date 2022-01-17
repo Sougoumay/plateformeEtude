@@ -18,7 +18,8 @@ class CreateTasksTable extends Migration
             $table->string('nom');
             $table->text('description');
             $table->float('points');
-            $table->foreignId('subject_id')->constrained()->onDelete('cascade')->onUpdate('cascade');
+            $table->foreignId('subject_id')->constrained()
+                ->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();
             $table->softDeletes();
         });

@@ -9463,7 +9463,7 @@ jQuery.extend( {
 			// URL without anti-cache param
 			cacheURL,
 
-			// Response headers as string
+			// Responses headers as string
 			responseHeadersString,
 
 			// timeout handle
@@ -9474,7 +9474,7 @@ jQuery.extend( {
 
 			transport,
 
-			// Response headers
+			// Responses headers
 			responseHeaders,
 
 			// Create the final options object

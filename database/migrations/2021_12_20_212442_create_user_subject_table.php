@@ -13,7 +13,7 @@ class CreateUserSubjectTable extends Migration
      */
     public function up()
     {
-        Schema::create('user_subject', function (Blueprint $table) {
+        Schema::create('user_subjects', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('student_id')->unsigned();
             $table->foreign('student_id')->references('id')->on('users')

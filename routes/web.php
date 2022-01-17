@@ -18,28 +18,27 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::view('/layouts','layouts/layoutsPrincipale');
-
 Route::view('/index','index');
 
 Route::post('/createUser',[Matiere::class,'createUser'])->name('createUser');
 
-Route::view('/register','register');
+Route::view('/registere','register');
+
+//Route::view('/login','auth.login')->name('login');
 
 Route::group(['prefix'=>'teacher','middleware'=>'IsTeacher'],function(){
     Route::post('/createSubject',[Matiere::class,'createSubject'])->name('createSubject');
     Route::get('/createSubject/get',[Matiere::class,'createSubjectGet'])->name('createSubjectGet');
-    Route::view('/accueil','teacher/Accueil');
+    Route::get('',[Matiere::class,'teacherAccueil'])->name('teacher.accueil');
     Route::get('/detailsSubject/{id}',[Matiere::class,'detailsSubject'])
         ->name('detailsSubject')->where(['id'=>'[0-9]+']);
-    Route::get('/register',[Matiere::class,'register'])->name('register');
     Route::get('/allSubject',[Matiere::class,'allSubject'])->name('allSubject');
     Route::get('/subjectFollowedBy',[Matiere::class,'subjectFollowedBy'])->name('subjectFollowedBy');
     Route::post('/updateSubject/{id}',[Matiere::class,'updateSubject'])
         ->name('updateSubject')->where(['id'=>'[0-9]+']);
     Route::get('/updateSubjectGet/{id}',[Matiere::class,'updateSubjectGet'])
         ->name('updateSubjectGet')->where(['id'=>'[0-9]+']);
-    Route::post('/deleteSubject/{id}',[Matiere::class,'deleteSubject'])
+    Route::get('/deleteSubject/{id}',[Matiere::class,'deleteSubject'])
         ->name('deleteSubject')->where(['id'=>'[0-9]+']);
     Route::get('/createTaskGet/{id}',[Matiere::class,'createTaskGet'])
         ->name('createTaskGet')->where(['id'=>'[0-9]+']);
@@ -52,16 +51,26 @@ Route::group(['prefix'=>'teacher','middleware'=>'IsTeacher'],function(){
         ->name('updateTask')->where(['id'=>'[0-9]+']);
     Route::get('/createSolutionGet/{id}',[Matiere::class,'createSolutionGet'])
         ->name('createSolutionGet')->where(['id'=>'[0-9]+']);
+    Route::get('/evaluateSolutionGet/{id}',[Matiere::class,'evaluateSolutionGet'])
+        ->name('evaluateSolutionGet')->where(['id'=>'[0-9]+']);
+    Route::post('/evaluateSolution/{id}',[Matiere::class,'evaluateSolution'])
+        ->name('evaluateSolution')->where(['id'=>'[0-9]+']);
 });
 
 Route::group(['prefix'=>'student'],function(){
     Route::get('/accueil',[Matiere::class,'studentAccueil'])->name('student.accueil');
     Route::get('/addSujetGet',[Matiere::class,'studentPrendreSujetGet'])
         ->name('student.prendreSujetGet');
-    Route::post('/addSubject/{id}',[Matiere::class,'addSubject'])
+    Route::get('/addSubject/{id}',[Matiere::class,'addSubject'])
         ->name('student.addSubject')->where(['id'=>'[0-9]+']);
     Route::get('/deleteSubject/{id}',[Matiere::class,'studentDeleteSubject'])
         ->name('student.deleteSubject')->where(['id'=>'[0-9]+']);
+    Route::get('/subjectDetailGet/{id}',[Matiere::class,'studentSubjectDetailsGet'])
+        ->name('student.SubjectDetailsGet')->where(['id'=>'[0-9+]']);
+    Route::get('/studentAnswerOnTaskGet/{id}',[Matiere::class,'studentAnswerOnTaskGet'])
+        ->name('student.AnswerOnTaskGet')->where(['id'=>'[0-9+]']);
+    Route::post('/studentAnswerOnTask/{id}',[Matiere::class,'studentAnswerOnTask'])
+        ->name('student.answerOnTask');
 
 });
 

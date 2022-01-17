@@ -7,13 +7,13 @@
             <div class="row mt">
                 <div class="col-lg-12">
                     <div class="form-panel">
-                        <form role="form" class="form-horizontal style-form" method="post" action="{{route('createSubject')}}">
+                        <form role="form" class="form-horizontal style-form" method="post" action="{{route('createTask',$sujet->id)}}">
                             @csrf
                             @if($errors->any())
                                 <div class="alert alert-danger">
                                     <ul>
                                         @foreach($errors->all() as $error)
-                                            <li>{{$error}}</li>
+                                            <li>$error</li>
                                         @endforeach
                                     </ul>
                                 </div>
@@ -31,15 +31,9 @@
                                 </div>
                             </div>
                             <div class="form-group has-warning">
-                                <label class="col-lg-2 control-label">Code</label>
+                                <label class="col-lg-2 control-label">Points</label>
                                 <div class="col-lg-10">
-                                    <input type="text" name="code" placeholder="" id="code" class="form-control">
-                                </div>
-                            </div>
-                            <div class="form-group has-warning">
-                                <label class="col-lg-2 control-label">Credit</label>
-                                <div class="col-lg-10">
-                                    <input type="text" name="credit" placeholder="" id="credit" class="form-control">
+                                    <input type="number" name="points" placeholder="" id="code" class="form-control">
                                 </div>
                             </div>
                             <div class="form-group">

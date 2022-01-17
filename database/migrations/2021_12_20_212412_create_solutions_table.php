@@ -17,7 +17,11 @@ class CreateSolutionsTable extends Migration
             $table->id();
             $table->text('solution');
             $table->float('evaluation')->nullable();
-            $table->foreignId('task_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignId('task_id')->constrained()
+                ->onUpdate('cascade')->onDelete('cascade');
+            $table->bigInteger('student_id')->unsigned();
+            $table->foreign('student_id')->references('id')->on('users')
+                ->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();
         });

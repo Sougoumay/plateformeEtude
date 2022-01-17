@@ -55,7 +55,7 @@
                 @if($errors->any())
                     <div class="alert alert-danger">
                         <ul>
-                            @foreach($erros->all() as $error)
+                            @foreach($errors->all() as $error)
                                 <li>{{$error}}</li>
                             @endforeach
                         </ul>
@@ -69,11 +69,11 @@
                     <label>Prenom : </label>
                     <input type="text" name="prenom" value="{{old('prenom')}}" class="form-control" placeholder="Prenom" autofocus>
                     <br>
-                    <label>Email : </label>
-                    <input type="email" name="email" value="{{old('email')}}" class="form-control" placeholder="Email" autofocus>
-                    <br>
                     <label>Identifiant : </label>
                     <input type="text" name="identifiant" value="{{old('identifiant')}}" class="form-control" placeholder="Numero unique" autofocus>
+                    <br>
+                    <label>Email : </label>
+                    <input type="email" name="email" value="{{old('email')}}" class="form-control" placeholder="Email" autofocus>
                     <br>
                     <label>Password :  </label>
                     <input type="password" name="password" value="{{old('password')}}" class="form-control" placeholder="Password" autofocus>
@@ -98,7 +98,7 @@
                             </div>
                             <div class="modal-body">
                                 <p>Enter your e-mail address below to reset your password.</p>
-                                <input type="text" name="email" placeholder="Email" autocomplete="off" class="form-control placeholder-no-fix">
+                                <input type="text" name="mail" placeholder="Email" autocomplete="off" class="form-control placeholder-no-fix">
                             </div>
                             <div class="modal-footer">
                                 <button data-dismiss="modal" class="btn btn-default" type="button">Cancel</button>

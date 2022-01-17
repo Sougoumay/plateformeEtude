@@ -9,29 +9,19 @@ class Subject extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nom','description','code','credit'];
+    protected $fillable = ['nom','description','code','credit','teacher_id'];
 
 
-    public function users()
+    public function userTeachers()
     {
-        $relation = "";
-        if(User::Auth()->status==="teacher"){
-            $relation = $this->belongsTo(User::class);
-        } elseif (User::Auth()->status==="student"){
-            $relation = $this->belongsToMany(User::class);
-        }
-        return $relation;
+        return $this->belongsTo(User::class,'teacher_id');
+
     }
 
-    /*public function student()
+    public function userStudents()
     {
-        return $this->belongsToMany(Student::class);
+        return $this->belongsToMany(User::class, 'user_subjects', 'subject_id','student_id');
     }
-
-    public function teachers()
-    {
-        return $this->belongsTo(Teacher::class);
-    }*/
 
     public function tasks()
     {
